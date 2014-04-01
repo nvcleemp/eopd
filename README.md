@@ -1,4 +1,4 @@
 eOPD
 ====
 
-The eOPD program searches for extended outer planar discs in plane triangulations.
+The eOPD program searches for extended outerplanar discs in plane triangulations.

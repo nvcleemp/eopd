@@ -559,6 +559,7 @@ int main(int argc, char *argv[]) {
     int length;
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
+        eopdCount = 0;
         if(findUncoveredFaceTuple(EMPTY_SET, 0, 0)){
             writePlanarCode();
             numberOfUncoveredGraphs++;

@@ -162,14 +162,35 @@ void printVertexTuple(bitset tuple){
 
 ////////END DEBUGGING METHODS
 
+boolean greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFaces){
+    int i = 0;
+    
+    while(i < ne &&
+            !(CONTAINS_ALL(currentEopdVertices, edges[i].vertices) &&
+              !CONTAINS(currentEopdFaces, edges[i].rightface) &&
+              (INTERSECTION(currentEopdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices))){
+        i++;
+    }
+    
+    if(i==ne){
+        //store the eOPD
+        eopdFaces[eopdCount] = currentEopdFaces;
+        eopdVertices[eopdCount] = currentEopdVertices;
+        eopdCount++;
+    } else {
+        //extend
+        greedyExtendEopdAndStore(
+                UNION(currentEopdVertices, faceSets[edges[i].rightface]),
+                UNION(currentEopdFaces, SINGLETON(edges[i].rightface)));
+    }
+}
+
 boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces){
     int i;
     //first check whether this is a covering eOPD
     if(IS_NOT_EMPTY(INTERSECTION(currentEopdFaces, remainingFaces))){
         //store the eOPD
-        eopdFaces[eopdCount] = currentEopdFaces;
-        eopdVertices[eopdCount] = currentEopdVertices;
-        eopdCount++;
+        greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
         return TRUE;
     }
     

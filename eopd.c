@@ -21,9 +21,7 @@
 #include <string.h>
 
 
-#ifndef MAXN
-#define MAXN 64            /* the maximum number of vertices */
-#endif
+#define MAXN 34            /* the maximum number of vertices */
 #define MAXE (6*MAXN-12)    /* the maximum number of oriented edges */
 #define MAXF (2*MAXN-4)      /* the maximum number of faces */
 #define MAXVAL (MAXN-1)  /* the maximum degree of a vertex */

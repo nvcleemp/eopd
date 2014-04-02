@@ -110,6 +110,45 @@ int eopdCount = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 
+////////START DEBUGGING METHODS
+
+void printFaces(){
+    int i, j;
+    for(i=0; i<nf; i++){
+        fprintf(stderr, "%d) ", i+1);
+        for(j=0; j<nv; j++){
+            if(CONTAINS(faceSets[i], j)){
+                fprintf(stderr, "%d ", j+1);
+            }
+        }
+        fprintf(stderr, "\n");
+    }
+}
+
+void printFaceTuple(bitset tuple){
+    int i;
+    fprintf(stderr, "Face tuple: ");
+    for(i=0; i<nf; i++){
+        if(CONTAINS(tuple, i)){
+            fprintf(stderr, "%d ", i+1);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
+void printVertexTuple(bitset tuple){
+    int i;
+    fprintf(stderr, "Vertex tuple: ");
+    for(i=0; i<nv; i++){
+        if(CONTAINS(tuple, i)){
+            fprintf(stderr, "%d ", i+1);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
+////////END DEBUGGING METHODS
+
 boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces){
     int i;
     //first check whether this is a covering eOPD

@@ -224,17 +224,20 @@ boolean findEOPD(bitset tuple){
     return FALSE;
 }
 
-boolean findUncoveredFaceTuple(bitset tuple, int position, int size){
+boolean findUncoveredFaceTuple(bitset tuple, bitset tupleVertices, int position, int size){
     if((position == nf) && (size < 4)){
         return FALSE;
     }
     if(size < 3){
         //just extend and continue
-        if(findUncoveredFaceTuple(tuple, position+1, size)){
+        if(findUncoveredFaceTuple(tuple, tupleVertices, position+1, size)){
             return TRUE;
         }
-        if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)), position+1, size+1)){
-            return TRUE;
+        if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
+            if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)),
+                    UNION(tupleVertices, faceSets[position]), position+1, size+1)){
+                return TRUE;
+            }
         }
     } else if(size == 3){
         //search for eOPD and if none found: go to 4-tuple
@@ -242,11 +245,14 @@ boolean findUncoveredFaceTuple(bitset tuple, int position, int size){
             return FALSE;
         }
         //no eOPD found: extending tuple
-        if(findUncoveredFaceTuple(tuple, position+1, size)){
+        if(findUncoveredFaceTuple(tuple, tupleVertices, position+1, size)){
             return TRUE;
         }
-        if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)), position+1, size+1)){
-            return TRUE;
+        if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
+            if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)),
+                    UNION(tupleVertices, faceSets[position]), position+1, size+1)){
+                return TRUE;
+            }
         }
     } else {// size == 4
         //search for eOPD
@@ -614,7 +620,7 @@ int main(int argc, char *argv[]) {
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
         eopdCount = 0;
-        if(findUncoveredFaceTuple(EMPTY_SET, 0, 0)){
+        if(findUncoveredFaceTuple(EMPTY_SET, EMPTY_SET, 0, 0)){
             writePlanarCode();
             numberOfUncoveredGraphs++;
         }

@@ -222,17 +222,17 @@ boolean findEOPD(bitset tuple){
     return FALSE;
 }
 
-boolean findUncoveredFaceTuple(bitset tuple, bitset tupleVertices, int position, int size){
+boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int position, int size){
     if((position == nf) && (size < 4)){
         return FALSE;
     }
     if(size < 3){
         //just extend and continue
-        if(findUncoveredFaceTuple(tuple, tupleVertices, position+1, size)){
+        if(findUncoveredFaceTuple_impl(tuple, tupleVertices, position+1, size)){
             return TRUE;
         }
         if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
-            if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)),
+            if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(position)),
                     UNION(tupleVertices, faceSets[position]), position+1, size+1)){
                 return TRUE;
             }
@@ -243,11 +243,11 @@ boolean findUncoveredFaceTuple(bitset tuple, bitset tupleVertices, int position,
             return FALSE;
         }
         //no eOPD found: extending tuple
-        if(findUncoveredFaceTuple(tuple, tupleVertices, position+1, size)){
+        if(findUncoveredFaceTuple_impl(tuple, tupleVertices, position+1, size)){
             return TRUE;
         }
         if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
-            if(findUncoveredFaceTuple(UNION(tuple, SINGLETON(position)),
+            if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(position)),
                     UNION(tupleVertices, faceSets[position]), position+1, size+1)){
                 return TRUE;
             }
@@ -258,6 +258,11 @@ boolean findUncoveredFaceTuple(bitset tuple, bitset tupleVertices, int position,
     }
     //if we get here then all tuples extending the current tuple were covered
     return FALSE;
+}
+
+boolean findUncoveredFaceTuple(){
+    eopdCount = 0;
+    return findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
 }
 
 //=============== Writing planarcode of graph ===========================
@@ -616,8 +621,7 @@ int main(int argc, char *argv[]) {
     int length;
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
-        eopdCount = 0;
-        if(findUncoveredFaceTuple(EMPTY_SET, EMPTY_SET, 0, 0)){
+        if(findUncoveredFaceTuple()){
             writePlanarCode();
             numberOfUncoveredGraphs++;
         }

@@ -281,8 +281,49 @@ boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int posi
     return FALSE;
 }
 
+void constructInitialEopds(){
+    int i;
+    
+    EDGE *sharedEdge = facestart[0];
+    int neighbouringFace = sharedEdge->inverse->rightface;
+    bitset currentEopdVertices = faceSets[neighbouringFace];
+    bitset currentEopdFaces = UNION(SINGLETON(0), SINGLETON(neighbouringFace));
+    greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
+    bitset coveredFaces = eopdFaces[0];
+    
+    i = 1; //0 is covered
+    while(i < nf && CONTAINS(coveredFaces, i)){
+        i++;
+    }
+    if(i==nf){
+        return FALSE; //all faces covered
+    }
+    sharedEdge = facestart[i];
+    neighbouringFace = sharedEdge->inverse->rightface;
+    currentEopdVertices = faceSets[neighbouringFace];
+    currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
+    ADD_ALL(coveredFaces, eopdFaces[1]);
+    
+    i = nf - 1;
+    while(i > 1 && CONTAINS(coveredFaces, i)){
+        i--;
+    }
+    if(i==1){
+        return FALSE; //all faces covered
+    }
+    sharedEdge = facestart[i];
+    neighbouringFace = sharedEdge->inverse->rightface;
+    currentEopdVertices = faceSets[neighbouringFace];
+    currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
+}
+
 boolean findUncoveredFaceTuple(){
+    //reset counter for eOPD's
     eopdCount = 0;
+    
+    //start by constructing some eOPD's to exclude many tuples
+    constructInitialEopds();
+    
     return findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
 }
 

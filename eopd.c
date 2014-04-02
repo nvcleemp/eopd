@@ -529,7 +529,7 @@ int readPlanarCode(unsigned short code[], int *length, FILE *file) {
     if (c != 0) /* unsigned chars would be sufficient */ {
         code[0] = c;
         if (code[0] > MAXN) {
-            fprintf(stderr, "Constant N too small %d > %d \n", code[0], MAXN);
+            fprintf(stderr, "Constant MAXN too small: %d > %d \n", code[0], MAXN);
             exit(1);
         }
         while (zeroCounter < code[0]) {
@@ -544,7 +544,7 @@ int readPlanarCode(unsigned short code[], int *length, FILE *file) {
             exit(1);
         }
         if (code[0] > MAXN) {
-            fprintf(stderr, "Constant N too small %d > %d \n", code[0], MAXN);
+            fprintf(stderr, "Constant MAXN too small: %d > %d \n", code[0], MAXN);
             exit(1);
         }
         bufferSize = 1;
@@ -570,8 +570,7 @@ void help(char *name) {
     fprintf(stderr, "The program %s checks extended outer planar discs in plane triangulations.\n\n", name);
     fprintf(stderr, "Usage\n=====\n");
     fprintf(stderr, " %s [options]\n\n", name);
-    fprintf(stderr, "\nThis program can handle graphs up to %d vertices. Recompile if you need larger\n", MAXN);
-    fprintf(stderr, "graphs.\n\n");
+    fprintf(stderr, "\nThis program can handle graphs up to %d vertices.\n\n", MAXN);
     fprintf(stderr, "Valid options\n=============\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");

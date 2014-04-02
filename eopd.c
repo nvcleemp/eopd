@@ -136,6 +136,21 @@ void printFaceTuple(bitset tuple){
     fprintf(stderr, "\n");
 }
 
+void printFaceTupleFaces(bitset tuple){
+    int i, j;
+    for(i=0; i<nf; i++){
+        if(CONTAINS(tuple, i)){
+            fprintf(stderr, "%d) ", i+1);
+            for(j=0; j<nv; j++){
+                if(CONTAINS(faceSets[i], j)){
+                    fprintf(stderr, "%d ", j+1);
+                }
+            }
+            fprintf(stderr, "\n");
+        }
+    }
+}
+
 void printVertexTuple(bitset tuple){
     int i;
     fprintf(stderr, "Vertex tuple: ");

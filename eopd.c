@@ -296,7 +296,7 @@ void constructInitialEopds(){
         i++;
     }
     if(i==nf){
-        return FALSE; //all faces covered
+        return; //all faces covered
     }
     sharedEdge = facestart[i];
     neighbouringFace = sharedEdge->inverse->rightface;
@@ -309,7 +309,7 @@ void constructInitialEopds(){
         i--;
     }
     if(i==1){
-        return FALSE; //all faces covered
+        return; //all faces covered
     }
     sharedEdge = facestart[i];
     neighbouringFace = sharedEdge->inverse->rightface;

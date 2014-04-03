@@ -162,7 +162,7 @@ void printVertexTuple(bitset tuple){
 
 ////////END DEBUGGING METHODS
 
-boolean greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFaces){
+void greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFaces){
     int i = 0;
     
     while(i < ne &&

@@ -185,6 +185,36 @@ void greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFace
     }
 }
 
+void greedyExtendEopdAsPathAndStore(bitset currentEopdVertices, bitset currentEopdFaces, EDGE *lastExtendedEdge){
+    
+    EDGE *extension = lastExtendedEdge->next;
+    
+    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
+            extension->vertices){
+            //face to the right of extension is addable
+            greedyExtendEopdAsPathAndStore(
+                    UNION(currentEopdVertices, faceSets[extension->rightface]),
+                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
+                    extension);
+            return;
+    }
+    
+    extension = lastExtendedEdge->inverse->prev->inverse;
+    
+    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
+            extension->vertices){
+            //face to the right of extension is addable
+            greedyExtendEopdAsPathAndStore(
+                    UNION(currentEopdVertices, faceSets[extension->rightface]),
+                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
+                    extension);
+            return;
+    }
+    
+    //extend in all directions
+    greedyExtendEopdAndStore(currentEopdVertices, currentEopdVertices);
+}
+
 boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces, EDGE *lastExtendedEdge){
     //first check whether this is a covering eOPD
     if(IS_NOT_EMPTY(INTERSECTION(currentEopdFaces, remainingFaces))){

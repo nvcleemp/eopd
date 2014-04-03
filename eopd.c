@@ -103,7 +103,6 @@ int ne;
 int nf;
 
 bitset eopdFaces[MAX_EOPD]; //contains extension
-bitset eopdVertices[MAX_EOPD]; //doesn't contain third vertex of extension
 int eopdCount = 0;
 
 //statistics
@@ -180,7 +179,6 @@ void greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFace
     if(i==ne){
         //store the eOPD
         eopdFaces[eopdCount] = currentEopdFaces;
-        eopdVertices[eopdCount] = currentEopdVertices;
         eopdCount++;
     } else {
         //extend

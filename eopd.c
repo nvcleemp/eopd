@@ -185,8 +185,7 @@ boolean greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdF
     }
 }
 
-boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces){
-    int i;
+boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces, EDGE *lastExtendedEdge){
     //first check whether this is a covering eOPD
     if(IS_NOT_EMPTY(INTERSECTION(currentEopdFaces, remainingFaces))){
         //store the eOPD
@@ -195,17 +194,28 @@ boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitse
     }
     
     //otherwise try extending the eOPD
-    for(i = 0; i < ne; i++){
-        if(CONTAINS_ALL(currentEopdVertices, edges[i].vertices) &&
-                !CONTAINS(currentEopdFaces, edges[i].rightface) &&
-                (INTERSECTION(currentEopdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices)){
-            //face to the right of edge i is addable
-            if(findEOPD_impl(UNION(currentEopdVertices, faceSets[edges[i].rightface]),
-                    UNION(currentEopdFaces, SINGLETON(edges[i].rightface)),
-                    remainingFaces)){
+    EDGE *extension = lastExtendedEdge->next;
+    
+    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
+            extension->vertices){
+            //face to the right of extension is addable
+            if(findEOPD_impl(UNION(currentEopdVertices, faceSets[extension->rightface]),
+                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
+                    remainingFaces, extension)){
                 return TRUE;
             }
-        }
+    }
+    
+    extension = lastExtendedEdge->inverse->prev->inverse;
+    
+    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
+            extension->vertices){
+            //face to the right of extension is addable
+            if(findEOPD_impl(UNION(currentEopdVertices, faceSets[extension->rightface]),
+                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
+                    remainingFaces, extension)){
+                return TRUE;
+            }
     }
     
     return FALSE;
@@ -233,7 +243,7 @@ boolean findEOPD(bitset tuple){
                 int neighbouringFace = sharedEdge->inverse->rightface;
                 bitset currentEopdVertices = faceSets[neighbouringFace];
                 bitset currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
-                if(findEOPD_impl(currentEopdVertices, currentEopdFaces, remainingFaces)){
+                if(findEOPD_impl(currentEopdVertices, currentEopdFaces, remainingFaces, sharedEdge->inverse)){
                     return TRUE;
                 }
                 sharedEdge = sharedEdge->next->inverse;

@@ -220,7 +220,7 @@ void greedyExtendEopdAsPathAndStore(bitset currentEopdVertices, bitset currentEo
     greedyExtendEopdAndStore(currentEopdVertices, currentEopdVertices);
 }
 
-boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitset remainingFaces, EDGE *lastExtendedEdge){
+boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, int eopdExtension, bitset remainingFaces, EDGE *lastExtendedEdge){
     //first check whether this is a covering eOPD
     if(IS_NOT_EMPTY(INTERSECTION(currentEopdFaces, remainingFaces))){
         //store the eOPD
@@ -236,7 +236,7 @@ boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitse
             //face to the right of extension is addable
             if(findEOPD_impl(UNION(currentEopdVertices, faceSets[extension->rightface]),
                     UNION(currentEopdFaces, SINGLETON(extension->rightface)),
-                    remainingFaces, extension)){
+                    eopdExtension, remainingFaces, extension)){
                 return TRUE;
             }
     }
@@ -248,7 +248,7 @@ boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, bitse
             //face to the right of extension is addable
             if(findEOPD_impl(UNION(currentEopdVertices, faceSets[extension->rightface]),
                     UNION(currentEopdFaces, SINGLETON(extension->rightface)),
-                    remainingFaces, extension)){
+                    eopdExtension, remainingFaces, extension)){
                 return TRUE;
             }
     }
@@ -279,7 +279,7 @@ boolean findEOPD(bitset tuple){
                 int neighbouringFace = sharedEdge->inverse->rightface;
                 bitset currentEopdVertices = faceSets[neighbouringFace];
                 bitset currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
-                if(findEOPD_impl(currentEopdVertices, currentEopdFaces, remainingFaces, sharedEdge->inverse)){
+                if(findEOPD_impl(currentEopdVertices, currentEopdFaces, i, remainingFaces, sharedEdge->inverse)){
                     return TRUE;
                 }
                 sharedEdge = sharedEdge->next->inverse;

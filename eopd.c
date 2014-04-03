@@ -299,23 +299,9 @@ void constructInitialEopds(){
     bitset currentEopdVertices = faceSets[neighbouringFace];
     bitset currentEopdFaces = UNION(SINGLETON(0), SINGLETON(neighbouringFace));
     greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
-    bitset coveredFaces = eopdFaces[0];
-    
-    i = 1; //0 is covered
-    while(i < nf && CONTAINS(coveredFaces, i)){
-        i++;
-    }
-    if(i==nf){
-        return; //all faces covered
-    }
-    sharedEdge = facestart[i];
-    neighbouringFace = sharedEdge->inverse->rightface;
-    currentEopdVertices = faceSets[neighbouringFace];
-    currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
-    ADD_ALL(coveredFaces, eopdFaces[1]);
     
     i = nf - 1;
-    while(i > 1 && CONTAINS(coveredFaces, i)){
+    while(i > 1 && CONTAINS(eopdFaces[0], i)){
         i--;
     }
     if(i==1){
@@ -325,6 +311,7 @@ void constructInitialEopds(){
     neighbouringFace = sharedEdge->inverse->rightface;
     currentEopdVertices = faceSets[neighbouringFace];
     currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
+    greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
 }
 
 boolean findUncoveredFaceTuple(){
@@ -704,4 +691,5 @@ int main(int argc, char *argv[]) {
                 numberOfGraphs==1 ? "" : "s");
     fprintf(stderr, "Written %llu uncovered graph%s.\n", numberOfUncoveredGraphs, 
                 numberOfUncoveredGraphs==1 ? "" : "s");
+    return EXIT_SUCCESS;
 }

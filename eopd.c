@@ -109,6 +109,7 @@ int eopdCount = 0;
 unsigned long long int numberOfTuplesCoveredByStoredEopd = 0;
 unsigned long long int numberOfChecked3Tuples = 0;
 unsigned long long int numberOfChecked4Tuples = 0;
+int maximumEopdCount = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -357,7 +358,13 @@ boolean findUncoveredFaceTuple(){
     //start by constructing some eOPD's to exclude many tuples
     constructInitialEopds();
     
-    return findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
+    boolean result = findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
+    
+    if(eopdCount > maximumEopdCount){
+        maximumEopdCount = eopdCount;
+    }
+    
+    return result;
 }
 
 //=============== Writing planarcode of graph ===========================
@@ -737,5 +744,7 @@ int main(int argc, char *argv[]) {
                 - numberOfTuplesCoveredByStoredEopd;
     fprintf(stderr, "Searched eOPD for %llu tuple%s.\n",
             remaining, remaining==1 ? "" : "s");
+    fprintf(stderr, "Used a maximum of %d eOPD%s per triangulation.\n",
+            maximumEopdCount, maximumEopdCount==1 ? "" : "'s");
     return EXIT_SUCCESS;
 }

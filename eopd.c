@@ -341,20 +341,17 @@ boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int posi
 void constructInitialEopds(){
     int i;
     
-    bitset currentEopdVertices = faceSets[0];
-    bitset currentEopdFaces = SINGLETON(0);
-    greedyExtendOpdAndStore(currentEopdVertices, currentEopdFaces);
+    greedyExtendOpdAndStore(faceSets[0], SINGLETON(0));
     
-    i = nf - 1;
-    while(i > 1 && CONTAINS(opdFaces[0], i)){
-        i--;
+    bitset coveredFaces = UNION(opdFaces[eopdCount-1], extensionFaces[eopdCount-1]);
+    
+    for(i = nf -1; i > 0; i--){
+        if(!CONTAINS(coveredFaces, i)){
+            greedyExtendOpdAndStore(faceSets[i], SINGLETON(i));
+            ADD_ALL(coveredFaces, opdFaces[eopdCount-1]);
+            ADD_ALL(coveredFaces, extensionFaces[eopdCount-1]);
+        }
     }
-    if(i==1){
-        return; //all faces covered
-    }
-    currentEopdVertices = faceSets[i];
-    currentEopdFaces = SINGLETON(i);
-    greedyExtendOpdAndStore(currentEopdVertices, currentEopdFaces);
 }
 
 boolean findUncoveredFaceTuple(){

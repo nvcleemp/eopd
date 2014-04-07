@@ -53,7 +53,7 @@ typedef unsigned long long int bitset;
 #define ADD_ALL(s, elements) ((s) |= (elements))
 #define UNION(s1, s2) ((s1) | (s2))
 #define INTERSECTION(s1, s2) ((s1) & (s2))
-//these will only work of the element is actually in the set
+//these will only work if the element is actually in the set
 #define REMOVE(s, el) ((s) ^= SINGLETON(el))
 #define REMOVE_ALL(s, elements) ((s) ^= (elements))
 #define MINUS(s, el) ((s) ^ SINGLETON(el))

@@ -6,7 +6,8 @@
  */
 
 /* This program reads plane triangulations from standard in and
- * checks whether each 4-tuple is contained in an extended outer planar disc.   
+ * checks whether each 4-tuple of faces contains 2 faces which
+ * are contained in an extended outer planar disc.   
  * 
  * 
  * Compile with:

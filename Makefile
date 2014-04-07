@@ -10,7 +10,7 @@ clean:
 
 build/eopd: eopd.c
 	mkdir -p build
-	cc -o $@ -O4 $^
+	cc -o $@ -O4 -Wall $^
 
 sources: dist/eopd-sources.zip dist/eopd-sources.tar.gz
 

@@ -102,14 +102,15 @@ int nv;
 int ne;
 int nf;
 
-bitset eopdFaces[MAX_EOPD]; //contains extension
+bitset opdFaces[MAX_EOPD];
+bitset extensionFaces[MAX_EOPD]; //all extensions for the OPD
 int eopdCount = 0;
 
 //statistics
-unsigned long long int numberOfTuplesCoveredByStoredEopd = 0;
+unsigned long long int numberOfTuplesCoveredByStoredOpd = 0;
 unsigned long long int numberOfChecked3Tuples = 0;
 unsigned long long int numberOfChecked4Tuples = 0;
-int maximumEopdCount = 0;
+int maximumOpdCount = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -167,25 +168,32 @@ void printVertexTuple(bitset tuple){
 
 ////////END DEBUGGING METHODS
 
-void greedyExtendEopdAndStore(bitset currentEopdVertices, bitset currentEopdFaces){
+void greedyExtendOpdAndStore(bitset currentOpdVertices, bitset currentOpdFaces){
     int i = 0;
     
     while(i < ne &&
-            !(CONTAINS_ALL(currentEopdVertices, edges[i].vertices) &&
-              !CONTAINS(currentEopdFaces, edges[i].rightface) &&
-              (INTERSECTION(currentEopdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices))){
+            !(CONTAINS_ALL(currentOpdVertices, edges[i].vertices) &&
+              !CONTAINS(currentOpdFaces, edges[i].rightface) &&
+              (INTERSECTION(currentOpdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices))){
         i++;
     }
     
     if(i==ne){
-        //store the eOPD
-        eopdFaces[eopdCount] = currentEopdFaces;
+        //store the OPD together with all possible extensions
+        opdFaces[eopdCount] = currentOpdFaces;
+        extensionFaces[eopdCount] = EMPTY_SET;
+        for(i = 0; i < nf; i++){
+            if(!CONTAINS(currentOpdFaces, i) &&
+                    HAS_MORE_THAN_ONE_ELEMENT(INTERSECTION(faceSets[i], currentOpdVertices))){
+                ADD(extensionFaces[eopdCount], i);
+            }
+        }
         eopdCount++;
     } else {
         //extend
-        greedyExtendEopdAndStore(
-                UNION(currentEopdVertices, faceSets[edges[i].rightface]),
-                UNION(currentEopdFaces, SINGLETON(edges[i].rightface)));
+        greedyExtendOpdAndStore(
+                UNION(currentOpdVertices, faceSets[edges[i].rightface]),
+                UNION(currentOpdFaces, SINGLETON(edges[i].rightface)));
     }
 }
 
@@ -216,14 +224,14 @@ void greedyExtendEopdAsPathAndStore(bitset currentEopdVertices, bitset currentEo
     }
     
     //extend in all directions
-    greedyExtendEopdAndStore(currentEopdVertices, currentEopdVertices);
+    greedyExtendOpdAndStore(currentEopdVertices, currentEopdVertices);
 }
 
 boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, int eopdExtension, bitset remainingFaces, EDGE *lastExtendedEdge){
     //first check whether this is a covering eOPD
     if(IS_NOT_EMPTY(INTERSECTION(currentEopdFaces, remainingFaces))){
         //store the eOPD
-        greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
+        greedyExtendOpdAndStore(currentEopdVertices, MINUS(currentEopdFaces, eopdExtension));
         return TRUE;
     }
     
@@ -257,11 +265,13 @@ boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, int e
 
 boolean findEOPD(bitset tuple){
     int i, j;
-    //first we check the stored eOPD's
+    //first we check the stored OPD's
     for(i = 0; i < eopdCount; i++){
-        bitset intersection = INTERSECTION(tuple, eopdFaces[i]);
-        if(HAS_MORE_THAN_ONE_ELEMENT(intersection)){
-            numberOfTuplesCoveredByStoredEopd++;
+        bitset intersectionOpd = INTERSECTION(tuple, opdFaces[i]);
+        bitset intersectionExtensions = INTERSECTION(tuple, extensionFaces[i]);
+        if((IS_NOT_EMPTY(intersectionOpd) && IS_NOT_EMPTY(intersectionExtensions)) ||
+                (HAS_MORE_THAN_ONE_ELEMENT(intersectionOpd))){
+            numberOfTuplesCoveredByStoredOpd++;
             return TRUE;
         }
     }
@@ -331,24 +341,20 @@ boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int posi
 void constructInitialEopds(){
     int i;
     
-    EDGE *sharedEdge = facestart[0];
-    int neighbouringFace = sharedEdge->inverse->rightface;
-    bitset currentEopdVertices = faceSets[neighbouringFace];
-    bitset currentEopdFaces = UNION(SINGLETON(0), SINGLETON(neighbouringFace));
-    greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
+    bitset currentEopdVertices = faceSets[0];
+    bitset currentEopdFaces = SINGLETON(0);
+    greedyExtendOpdAndStore(currentEopdVertices, currentEopdFaces);
     
     i = nf - 1;
-    while(i > 1 && CONTAINS(eopdFaces[0], i)){
+    while(i > 1 && CONTAINS(opdFaces[0], i)){
         i--;
     }
     if(i==1){
         return; //all faces covered
     }
-    sharedEdge = facestart[i];
-    neighbouringFace = sharedEdge->inverse->rightface;
-    currentEopdVertices = faceSets[neighbouringFace];
-    currentEopdFaces = UNION(SINGLETON(i), SINGLETON(neighbouringFace));
-    greedyExtendEopdAndStore(currentEopdVertices, currentEopdFaces);
+    currentEopdVertices = faceSets[i];
+    currentEopdFaces = SINGLETON(i);
+    greedyExtendOpdAndStore(currentEopdVertices, currentEopdFaces);
 }
 
 boolean findUncoveredFaceTuple(){
@@ -360,10 +366,10 @@ boolean findUncoveredFaceTuple(){
     
     boolean result = findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
     
-    if(eopdCount > maximumEopdCount){
-        maximumEopdCount = eopdCount;
+    if(eopdCount > maximumOpdCount){
+        maximumOpdCount = eopdCount;
     }
-    
+
     return result;
 }
 
@@ -738,13 +744,13 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Checked %llu 3-tuple%s.\nChecked %llu 4-tuple%s.\n",
             numberOfChecked3Tuples, numberOfChecked3Tuples==1 ? "" : "s",
             numberOfChecked4Tuples, numberOfChecked4Tuples==1 ? "" : "s");
-    fprintf(stderr, "%llu tuple%s where covered by a stored eOPD.\n",
-            numberOfTuplesCoveredByStoredEopd, numberOfTuplesCoveredByStoredEopd==1 ? "" : "s");
+    fprintf(stderr, "%llu tuple%s where covered by a stored OPD with extension.\n",
+            numberOfTuplesCoveredByStoredOpd, numberOfTuplesCoveredByStoredOpd==1 ? "" : "s");
     unsigned long long int remaining = numberOfChecked3Tuples + numberOfChecked4Tuples
-                - numberOfTuplesCoveredByStoredEopd;
+                - numberOfTuplesCoveredByStoredOpd;
     fprintf(stderr, "Searched eOPD for %llu tuple%s.\n",
             remaining, remaining==1 ? "" : "s");
-    fprintf(stderr, "Used a maximum of %d eOPD%s per triangulation.\n",
-            maximumEopdCount, maximumEopdCount==1 ? "" : "'s");
+    fprintf(stderr, "Used a maximum of %d OPD%s per triangulation.\n",
+            maximumOpdCount, maximumOpdCount==1 ? "" : "'s");
     return EXIT_SUCCESS;
 }

@@ -294,13 +294,13 @@ boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int posi
     }
     if(size < 3){
         //just extend and continue
-        if(findUncoveredFaceTuple_impl(tuple, tupleVertices, position+1, size)){
-            return TRUE;
-        }
-        if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
-            if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(position)),
-                    UNION(tupleVertices, faceSets[position]), position+1, size+1)){
-                return TRUE;
+        int i;
+        for(i = position; i < nf - 3 + size; i++){
+            if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[i]))){
+                if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(i)),
+                    UNION(tupleVertices, faceSets[i]), i+1, size+1)){
+                    return TRUE;
+                }
             }
         }
     } else if(size == 3){
@@ -310,13 +310,13 @@ boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int posi
             return FALSE;
         }
         //no eOPD found: extending tuple
-        if(findUncoveredFaceTuple_impl(tuple, tupleVertices, position+1, size)){
-            return TRUE;
-        }
-        if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[position]))){
-            if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(position)),
-                    UNION(tupleVertices, faceSets[position]), position+1, size+1)){
-                return TRUE;
+        int i;
+        for(i = position; i < nf; i++){
+            if(IS_EMPTY(INTERSECTION(tupleVertices, faceSets[i]))){
+                if(findUncoveredFaceTuple_impl(UNION(tuple, SINGLETON(i)),
+                    UNION(tupleVertices, faceSets[i]), i+1, size+1)){
+                    return TRUE;
+                }
             }
         }
     } else {// size == 4
@@ -351,7 +351,14 @@ boolean findUncoveredFaceTuple(){
     //start by constructing some eOPD's to exclude many tuples
     constructInitialEopds();
     
-    boolean result = findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
+    boolean result = FALSE; // = findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
+    int i;
+    for(i = 0; i < nf - 3; i++){
+        result = findUncoveredFaceTuple_impl(SINGLETON(i), faceSets[i], i + 1, 1);
+        if(result){
+            break;
+        }
+    }
     
     if(eopdCount > maximumOpdCount){
         maximumOpdCount = eopdCount;

@@ -288,7 +288,8 @@ boolean findEOPD(bitset tuple){
 }
 
 boolean findUncoveredFaceTuple_impl(bitset tuple, bitset tupleVertices, int position, int size){
-    if((position == nf) && (size < 4)){
+    if(size + (nf - position) < 4){
+        //this tuple can't be completed to a 4-tuple
         return FALSE;
     }
     if(size < 3){

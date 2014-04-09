@@ -169,12 +169,11 @@ void printVertexTuple(bitset tuple){
 
 ////////END DEBUGGING METHODS
 
-void greedyExtendOpdAndStore(bitset currentOpdVertices, bitset currentOpdFaces){
+void greedyExtendOpdAndStore_impl(bitset currentOpdVertices, bitset currentOpdFaces){
     int i = 0;
     
     while(i < ne &&
-            !(CONTAINS_ALL(currentOpdVertices, edges[i].vertices) &&
-              !CONTAINS(currentOpdFaces, edges[i].rightface) &&
+            !(ISMARKED(edges + i) &&
               (INTERSECTION(currentOpdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices))){
         i++;
     }
@@ -191,11 +190,29 @@ void greedyExtendOpdAndStore(bitset currentOpdVertices, bitset currentOpdFaces){
         }
         eopdCount++;
     } else {
+        //unmark boundary edge along which we are extending
+        UNMARK(edges + i);
+        //mark new boundary edges
+        MARK((edges + i)->next);
+        MARK((edges + i)->inverse->prev->inverse);
         //extend
-        greedyExtendOpdAndStore(
+        greedyExtendOpdAndStore_impl(
                 UNION(currentOpdVertices, faceSets[edges[i].rightface]),
                 UNION(currentOpdFaces, SINGLETON(edges[i].rightface)));
     }
+}
+
+void greedyExtendOpdAndStore(bitset currentOpdVertices, bitset currentOpdFaces){
+    int i;
+    RESETMARKS;
+    //mark faces in the boundary of the OPD
+    for(i = 0; i < ne; i++){
+        if(CONTAINS_ALL(currentOpdVertices, edges[i].vertices) &&
+                !CONTAINS(currentOpdFaces, edges[i].rightface)){
+            MARK(edges + i);
+        }
+    }
+    greedyExtendOpdAndStore_impl(currentOpdVertices, currentOpdFaces);
 }
 
 void greedyExtendEopdAsPathAndStore(bitset currentEopdVertices, bitset currentEopdFaces, EDGE *lastExtendedEdge){

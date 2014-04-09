@@ -169,80 +169,51 @@ void printVertexTuple(bitset tuple){
 
 ////////END DEBUGGING METHODS
 
-void greedyExtendOpdAndStore_impl(bitset currentOpdVertices, bitset currentOpdFaces){
-    int i = 0;
-    
-    while(i < ne &&
-            !(ISMARKED(edges + i) &&
-              (INTERSECTION(currentOpdVertices, neighbourhood[edges[i].next->end]) == edges[i].vertices))){
-        i++;
-    }
-    
-    if(i==ne){
-        //store the OPD together with all possible extensions
-        opdFaces[eopdCount] = currentOpdFaces;
-        extensionFaces[eopdCount] = EMPTY_SET;
-        for(i = 0; i < nf; i++){
-            if(!CONTAINS(currentOpdFaces, i) &&
-                    HAS_MORE_THAN_ONE_ELEMENT(INTERSECTION(faceSets[i], currentOpdVertices))){
-                ADD(extensionFaces[eopdCount], i);
-            }
-        }
-        eopdCount++;
-    } else {
-        //unmark boundary edge along which we are extending
-        UNMARK(edges + i);
-        //mark new boundary edges
-        MARK((edges + i)->next);
-        MARK((edges + i)->inverse->prev->inverse);
-        //extend
-        greedyExtendOpdAndStore_impl(
-                UNION(currentOpdVertices, faceSets[edges[i].rightface]),
-                UNION(currentOpdFaces, SINGLETON(edges[i].rightface)));
-    }
-}
+//some macros for the stack in the next method
+#define PUSH(stack, value) stack[top++] = (value)
+#define POP(stack) stack[--top];
+#define STACKISEMPTY top==0
+#define STACKISNOTEMPTY top>0
 
 void greedyExtendOpdAndStore(bitset currentOpdVertices, bitset currentOpdFaces){
     int i;
-    RESETMARKS;
-    //mark faces in the boundary of the OPD
+    int top;
+    EDGE *boundaryStack[MAXE];
+
+    top = 0;
+    
+    //fill the stack with the current boundary
     for(i = 0; i < ne; i++){
         if(CONTAINS_ALL(currentOpdVertices, edges[i].vertices) &&
                 !CONTAINS(currentOpdFaces, edges[i].rightface)){
-            MARK(edges + i);
+            PUSH(boundaryStack, edges + i);
         }
     }
-    greedyExtendOpdAndStore_impl(currentOpdVertices, currentOpdFaces);
-}
-
-void greedyExtendEopdAsPathAndStore(bitset currentEopdVertices, bitset currentEopdFaces, EDGE *lastExtendedEdge){
     
-    EDGE *extension = lastExtendedEdge->next;
-    
-    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
-            extension->vertices){
-            //face to the right of extension is addable
-            greedyExtendEopdAsPathAndStore(
-                    UNION(currentEopdVertices, faceSets[extension->rightface]),
-                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
-                    extension);
-            return;
+    while(STACKISNOTEMPTY){
+        EDGE *currentEdge = POP(boundaryStack);
+        if(INTERSECTION(currentOpdVertices, neighbourhood[currentEdge->next->end])
+                == currentEdge->vertices){
+            //modify OPD by adding face to the right of current edge
+            ADD_ALL(currentOpdVertices, faceSets[currentEdge->rightface]);
+            ADD(currentOpdFaces, currentEdge->rightface);
+            
+            //push new boundary edges on stack
+            PUSH(boundaryStack, currentEdge->next);
+            PUSH(boundaryStack, currentEdge->inverse->prev->inverse);
+        }
     }
     
-    extension = lastExtendedEdge->inverse->prev->inverse;
-    
-    if(INTERSECTION(currentEopdVertices, neighbourhood[extension->next->end]) ==
-            extension->vertices){
-            //face to the right of extension is addable
-            greedyExtendEopdAsPathAndStore(
-                    UNION(currentEopdVertices, faceSets[extension->rightface]),
-                    UNION(currentEopdFaces, SINGLETON(extension->rightface)),
-                    extension);
-            return;
+    //store the OPD together with all possible extensions
+    opdFaces[eopdCount] = currentOpdFaces;
+    extensionFaces[eopdCount] = EMPTY_SET;
+    for(i = 0; i < nf; i++){
+        if(!CONTAINS(currentOpdFaces, i) &&
+                HAS_MORE_THAN_ONE_ELEMENT(INTERSECTION(faceSets[i], currentOpdVertices))){
+            ADD(extensionFaces[eopdCount], i);
+        }
     }
-    
-    //extend in all directions
-    greedyExtendOpdAndStore(currentEopdVertices, currentEopdVertices);
+    eopdCount++;
 }
 
 boolean findEOPD_impl(bitset currentEopdVertices, bitset currentEopdFaces, int eopdExtension, bitset remainingFaces, EDGE *lastExtendedEdge){

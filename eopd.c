@@ -351,7 +351,7 @@ boolean findUncoveredFaceTuple(){
     //start by constructing some eOPD's to exclude many tuples
     constructInitialEopds();
     
-    boolean result = FALSE; // = findUncoveredFaceTuple_impl(EMPTY_SET, EMPTY_SET, 0, 0);
+    boolean result = FALSE;
     int i;
     for(i = 0; i < nf - 3; i++){
         result = findUncoveredFaceTuple_impl(SINGLETON(i), faceSets[i], i + 1, 1);

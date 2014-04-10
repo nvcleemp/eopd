@@ -440,19 +440,7 @@ void writePlanarCode(){
 
 //=============== Reading and decoding planarcode ===========================
 
-EDGE *findEdge(int from, int to) {
-    EDGE *e, *elast;
-
-    e = elast = firstedge[from];
-    do {
-        if (e->end == to) {
-            return e;
-        }
-        e = e->next;
-    } while (e != elast);
-    fprintf(stderr, "error while looking for edge from %d to %d.\n", from, to);
-    exit(0);
-}
+EDGE *edgeMatrix[MAXN][MAXN];
 
 /* Store in the rightface field of each edge the number of the face on
    the right hand side of that edge.  Faces are numbered 0,1,....  Also
@@ -508,10 +496,11 @@ void decodePlanarCode(unsigned short* code) {
         edges[edgeCounter].vertices = UNION(SINGLETON(i), SINGLETON(code[codePosition] - 1));
         edges[edgeCounter].next = edges + edgeCounter + 1;
         if (code[codePosition] - 1 < i) {
-            inverse = findEdge(code[codePosition] - 1, i);
+            inverse = edgeMatrix[code[codePosition] - 1][i];
             edges[edgeCounter].inverse = inverse;
             inverse->inverse = edges + edgeCounter;
         } else {
+            edgeMatrix[i][code[codePosition] - 1] = edges + edgeCounter;
             edges[edgeCounter].inverse = NULL;
         }
         edgeCounter++;
@@ -528,10 +517,11 @@ void decodePlanarCode(unsigned short* code) {
             edges[edgeCounter].prev = edges + edgeCounter - 1;
             edges[edgeCounter].next = edges + edgeCounter + 1;
             if (code[codePosition] - 1 < i) {
-                inverse = findEdge(code[codePosition] - 1, i);
+                inverse = edgeMatrix[code[codePosition] - 1][i];
                 edges[edgeCounter].inverse = inverse;
                 inverse->inverse = edges + edgeCounter;
             } else {
+                edgeMatrix[i][code[codePosition] - 1] = edges + edgeCounter;
                 edges[edgeCounter].inverse = NULL;
             }
             edgeCounter++;

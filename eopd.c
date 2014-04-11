@@ -1,7 +1,7 @@
 /*
  * Main developer: Nico Van Cleemput
  * 
- * Copyright (C) 2014 Ghent University.
+ * Copyright (C) 2014 Nico Van Cleemput.
  * Licensed under the GNU GPL, read the file LICENSE.txt for details.
  */
 

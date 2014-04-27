@@ -2,13 +2,17 @@
 SOURCES = eopd.c\
           Makefile COPYRIGHT.txt LICENSE.txt README.md
 
-all: build/eopd
+all: build/eopd build/find_eopd_4_tuple
 
 clean:
 	rm -rf build
 	rm -rf dist
 
 build/eopd: eopd.c
+	mkdir -p build
+	cc -o $@ -O4 -Wall $^
+
+build/find_eopd_4_tuple: find_eopd_4_tuple.c
 	mkdir -p build
 	cc -o $@ -O4 -Wall $^
 
